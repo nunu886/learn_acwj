@@ -2,6 +2,7 @@
 #include "defs.h"
 
 #include <errno.h>
+#include <stdio.h>
 
 int Line;			// Current line number
 int Putback;			// Character put back by scanner
@@ -55,6 +56,6 @@ int main(int argc, char *argv[]) {
   statements();			// Parse the statements in the input
   genpostamble();		// Output the postamble
   fclose(Outfile);		// Close the output file and exit
-
+  fclose(Infile);
   return 0;
 }
