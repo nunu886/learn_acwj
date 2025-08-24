@@ -1,0 +1,18 @@
+int x;
+x = 10 < 11;
+print x;
+
+x = 999 == 999;
+print x;
+
+x = 998 <= 999;
+print x;
+
+x = 998 > 997;
+print x;
+
+x = 998 >= 998;
+print x;
+
+x = 996 != 996;
+print x;

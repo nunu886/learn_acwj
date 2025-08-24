@@ -21,6 +21,7 @@ void print_statement(void) {
   // generate the assembly code
   tree = binexpr(0);
   reg = genAST(tree, -1);
+  // printf("<<<< %d \n", reg);
   genprintint(reg);
   genfreeregs();
 

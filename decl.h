@@ -9,8 +9,8 @@
 int scan(struct token *t);
 
 // tree.c
-struct ASTnode *mkastnode(int op, struct ASTnode *left,
-			  struct ASTnode *right, int intvalue);
+struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *right,
+                          int intvalue);
 struct ASTnode *mkastleaf(int op, int intvalue);
 struct ASTnode *mkastunary(int op, struct ASTnode *left, int intvalue);
 
@@ -31,11 +31,18 @@ int cgsub(int r1, int r2);
 int cgmul(int r1, int r2);
 int cgdiv(int r1, int r2);
 void cgprintint(int r);
-int cgloadglob(char* identifier);
-int cgstorglob(int r, char* identifier);
+int cgloadglob(char *identifier);
+int cgstorglob(int r, char *identifier);
 void cgglobsym(char *sym);
 void genglobsym(char *s);
 int cgloadint(int value);
+int cgequal(int r1, int r2);
+int cgnotequal(int r1, int r2);
+int cglesshan(int r1, int r2);
+int cggreaterthan(int r1, int r2);
+int cglessequal(int r1, int r2);
+int cggreaterequal(int r1, int r2);
+int cgcompare(int r1, int r2, char *how);
 
 // expr.c
 struct ASTnode *binexpr(int ptp);
@@ -53,11 +60,11 @@ void semi(void);
 void fatald(char *s, int t);
 void ident();
 void fatal(char *s);
-void fatals(char* s1, char* s2);
+void fatals(char *s1, char *s2);
 void fatald(char *s, int t);
-void fatalc(char* s, int c);
+void fatalc(char *s, int c);
 
-//sym.c
+// sym.c
 int findglob(char *s);
 static int newglob();
 int addglob(char *name);

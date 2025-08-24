@@ -1,6 +1,6 @@
-#include "defs.h"
 #include "data.h"
 #include "decl.h"
+#include "defs.h"
 
 // Parsing of expressions
 // Copyright (c) 2019 Warren Toomey, GPL3
@@ -14,48 +14,91 @@ struct ASTnode *primary() {
   // and scan in the next token. Otherwise, a syntax error
   // for any other token type.
   switch (Token.token) {
-    case T_INTLIT:
-      n = mkastleaf(A_INTLIT, Token.intvalue);
-      break;
-    case T_IDENT:
-      id = findglob(Text);
-      if (id == -1) {
-          fatals("Unknown variable",Text);
-      }
-      n = mkastleaf(A_IDENT, id);
-      break;
-    default:
-      fatald("Syntax error on token %d", Token.token);
+  case T_INTLIT:
+    n = mkastleaf(A_INTLIT, Token.intvalue);
+    break;
+  case T_IDENT:
+    id = findglob(Text);
+    if (id == -1) {
+      fatals("Unknown variable", Text);
+    }
+    n = mkastleaf(A_IDENT, id);
+    break;
+  default:
+    fatald("Syntax error on token %d", Token.token);
   }
   scan(&Token);
   return (n);
 }
 
-
 // Convert a binary operator token into an AST operation.
 static int arithop(int tokentype) {
   switch (tokentype) {
-    case T_PLUS:
-      return (A_ADD);
-    case T_MINUS:
-      return (A_SUBTRACT);
-    case T_STAR:
-      return (A_MULTIPLY);
-    case T_SLASH:
-      return (A_DIVIDE);
-    default:
-      fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
-      exit(1);
+  case T_PLUS:
+    return (A_ADD);
+  case T_MINUS:
+    return (A_SUBTRACT);
+  case T_STAR:
+    return (A_MULTIPLY);
+  case T_SLASH:
+    return (A_DIVIDE);
+  case T_EQ:
+    return (A_EQ);
+  case T_NE:
+    return A_NE;
+  case T_LT:
+    return (A_LT);
+  case T_GT:
+    return A_GT;
+  case T_GE:
+    return A_GE;
+  case T_LE:
+    return A_LE;
+  default:
+    fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
+    exit(1);
   }
 }
 
 // Operator precedence for each token
-static int OpPrec[] = { 0, 10, 10, 20, 20, 0 };
+static int OpPrec[] = {
+    0, 10, 10, //eof, +, -,
+    20, 20, // *, /, %
+    30, // ==, !=
+    40, // <, >, <=, >=
+};
 
 // Check that we have a binary operator and
 // return its precedence.
 static int op_precedence(int tokentype) {
-  int prec = OpPrec[tokentype];
+  int prec = 0;
+  switch (tokentype) {
+      case T_PLUS:
+        prec = 10;
+        break;
+      case T_MINUS:
+        prec = 10;
+        break;
+      case T_STAR:
+        prec = 20;
+        break;
+      case T_SLASH:
+        prec = 20;
+        break;
+      case T_EQ:
+      case T_NE:
+        prec = 30;
+        break;
+      case T_LT:
+      case T_LE:
+      case T_GT:
+      case T_GE:
+        prec = 40;
+        break;
+      default:
+        prec = 0;
+        break;
+  }
   if (prec == 0) {
     fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
     exit(1);
@@ -86,7 +129,8 @@ struct ASTnode *binexpr(int ptp) {
 
     // Recursively call binexpr() with the
     // precedence of our token to build a sub-tree
-    right = binexpr(OpPrec[tokentype]);
+    int prec = op_precedence(tokentype);
+    right = binexpr(prec);
 
     // Join that sub-tree with ours. Convert the token
     // into an AST operation at the same time.

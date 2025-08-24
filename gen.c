@@ -7,7 +7,8 @@
 // Given an AST, generate
 // assembly code recursively
 int genAST(struct ASTnode *n, int tag) {
-  int leftreg = 0, rightreg = 0;
+  int leftreg = 0;
+  int rightreg = 0;
 
   // Get the left and right sub-tree values
   if (n->left)
@@ -30,11 +31,23 @@ int genAST(struct ASTnode *n, int tag) {
   case A_IDENT:
     return (cgloadglob(Gsym[n->v.id].name));
   case A_LVIDENT:
-  // printf("------------- %d\n", rightreg);
-    return (cgstorglob(rightreg, Gsym[n->v.id].name));
+    // printf("------------- %d\n", rightreg);
+    return (cgstorglob(tag, Gsym[n->v.id].name));
   case A_ASSIGN:
     // this work has already done, return the result.
     return rightreg;
+  case A_EQ:
+    return (cgequal(leftreg, rightreg));
+  case A_NE:
+    return cgnotequal(leftreg, rightreg);
+  case A_GT:
+    return cggreaterequal(leftreg, rightreg);
+  case A_LT:
+    return (cglesshan(leftreg, rightreg));
+  case A_LE:
+    return (cglessequal(leftreg, rightreg));
+  case A_GE:
+    return (cggreaterequal(leftreg, rightreg));
   default:
     fprintf(stderr, "Unknown AST operator %d\n", n->op);
     exit(1);

@@ -12,7 +12,7 @@ buildall:
      cc_buildn
 
 comp_ac:zig_build
-    ./zig-out/bin/lacwj ./test/input002.ac
+    ./zig-out/bin/lacwj ./test/input004.ac
 
 as:comp_ac
    cc -o out out.s
