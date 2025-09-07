@@ -1,5 +1,6 @@
 #include "decl.h"
 #include "data.h"
+#include "defs.h"
 #include <stdio.h>
 #include <stdlib.h>
 // Miscellaneous functions
@@ -24,6 +25,21 @@ void semi(void) {
 
 void ident() {
     match(T_IDENT, "identifier");
+}
+
+void lparen() {
+    match(T_LPAREN, "(");
+}
+void rparen() {
+    match(T_RPAREN, ")");
+}
+
+void lbrace() {
+    match(T_LABRCE, "{");
+}
+
+void rbrace() {
+    match(T_RABRCE, "{");
 }
 
 void fatal(char *s) {

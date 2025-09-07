@@ -1,6 +1,7 @@
 #include "data.h"
 #include "decl.h"
 #include "defs.h"
+#include <stdio.h>
 
 // Parsing of expressions
 // Copyright (c) 2019 Warren Toomey, GPL3
@@ -62,10 +63,10 @@ static int arithop(int tokentype) {
 
 // Operator precedence for each token
 static int OpPrec[] = {
-    0, 10, 10, //eof, +, -,
-    20, 20, // *, /, %
-    30, // ==, !=
-    40, // <, >, <=, >=
+    0,  10, 10, // eof, +, -,
+    20, 20,     // *, /, %
+    30,         // ==, !=
+    40,         // <, >, <=, >=
 };
 
 // Check that we have a binary operator and
@@ -73,33 +74,34 @@ static int OpPrec[] = {
 static int op_precedence(int tokentype) {
   int prec = 0;
   switch (tokentype) {
-      case T_PLUS:
-        prec = 10;
-        break;
-      case T_MINUS:
-        prec = 10;
-        break;
-      case T_STAR:
-        prec = 20;
-        break;
-      case T_SLASH:
-        prec = 20;
-        break;
-      case T_EQ:
-      case T_NE:
-        prec = 30;
-        break;
-      case T_LT:
-      case T_LE:
-      case T_GT:
-      case T_GE:
-        prec = 40;
-        break;
-      default:
-        prec = 0;
-        break;
+  case T_PLUS:
+    prec = 10;
+    break;
+  case T_MINUS:
+    prec = 10;
+    break;
+  case T_STAR:
+    prec = 20;
+    break;
+  case T_SLASH:
+    prec = 20;
+    break;
+  case T_EQ:
+  case T_NE:
+    prec = 30;
+    break;
+  case T_LT:
+  case T_LE:
+  case T_GT:
+  case T_GE:
+    prec = 40;
+    break;
+  default:
+    prec = 0;
+    break;
   }
   if (prec == 0) {
+    printf("->>>>>%d\n", tokentype);
     fprintf(stderr, "syntax error on line %d, token %d\n", Line, tokentype);
     exit(1);
   }
@@ -118,7 +120,7 @@ struct ASTnode *binexpr(int ptp) {
 
   // If we hit a semicolon, return just the left node
   tokentype = Token.token;
-  if (tokentype == T_SEMI)
+  if (tokentype == T_SEMI || tokentype == T_RPAREN)
     return (left);
 
   // While the precedence of this token is
@@ -134,12 +136,12 @@ struct ASTnode *binexpr(int ptp) {
 
     // Join that sub-tree with ours. Convert the token
     // into an AST operation at the same time.
-    left = mkastnode(arithop(tokentype), left, right, 0);
+    left = mkastnode(arithop(tokentype), left, NULL, right, 0);
 
     // Update the details of the current token.
     // If we hit a semicolon, return just the left node
     tokentype = Token.token;
-    if (tokentype == T_SEMI)
+    if (tokentype == T_SEMI || tokentype == T_RPAREN)
       return (left);
   }
 

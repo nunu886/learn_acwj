@@ -1,20 +1,70 @@
 #include "data.h"
 #include "decl.h"
+#include "defs.h"
 #include <stdio.h>
 // Generic code generator
 // Copyright (c) 2019 Warren Toomey, GPL3
 
+static int label() {
+  static int id = 1;
+  return id++;
+}
+
+static int genIFAST(struct ASTnode *n) {
+  int Lfalse = 0;
+  int Lend = 0;
+
+  Lfalse = label();
+  if (n->right) {
+    Lend = label();
+  }
+  // condition
+  genAST(n->left, Lfalse, n->op);
+  genfreeregs();
+
+  // true branch
+  genAST(n->mid, -1, n->op);
+  genfreeregs();
+
+  if (n->right) {
+    cgjump(Lend);
+  }
+  cglabel(Lfalse);
+
+  // false branch
+  if (n->right) {
+    genAST(n->right, -1, n->op);
+    genfreeregs();
+    cglabel(Lend);
+  }
+
+  return -1;
+}
+
 // Given an AST, generate
 // assembly code recursively
-int genAST(struct ASTnode *n, int tag) {
+int genAST(struct ASTnode *n, int reg, int parentASTop) {
   int leftreg = 0;
   int rightreg = 0;
 
+  switch (n->op) {
+  case A_IF:
+    return genIFAST(n);
+  case A_GLUE:
+    genAST(n->left, -1, n->op);
+    genAST(n->right, -1, n->op);
+    genfreeregs();
+
+    return -1;
+  }
+
   // Get the left and right sub-tree values
-  if (n->left)
-    leftreg = genAST(n->left, -1);
-  if (n->right)
-    rightreg = genAST(n->right, leftreg);
+  if (n->left){
+    leftreg = genAST(n->left, -1, n->op);
+  }
+  if (n->right) {
+    rightreg = genAST(n->right, leftreg, n->op);
+  }
 
   switch (n->op) {
   case A_ADD:
@@ -32,22 +82,25 @@ int genAST(struct ASTnode *n, int tag) {
     return (cgloadglob(Gsym[n->v.id].name));
   case A_LVIDENT:
     // printf("------------- %d\n", rightreg);
-    return (cgstorglob(tag, Gsym[n->v.id].name));
+    return (cgstorglob(reg, Gsym[n->v.id].name));
   case A_ASSIGN:
     // this work has already done, return the result.
     return rightreg;
   case A_EQ:
-    return (cgequal(leftreg, rightreg));
   case A_NE:
-    return cgnotequal(leftreg, rightreg);
   case A_GT:
-    return cggreaterequal(leftreg, rightreg);
   case A_LT:
-    return (cglesshan(leftreg, rightreg));
   case A_LE:
-    return (cglessequal(leftreg, rightreg));
   case A_GE:
-    return (cggreaterequal(leftreg, rightreg));
+    if (parentASTop == A_IF) {
+      return cgcompare_and_jump(n->op, leftreg, rightreg, reg);
+    } else {
+      return (cgcompare_and_set(n->op, leftreg, rightreg));
+    }
+  case A_PRINT:
+    genprintint(leftreg);
+    genfreeregs();
+    return (-1);
   default:
     fprintf(stderr, "Unknown AST operator %d\n", n->op);
     exit(1);

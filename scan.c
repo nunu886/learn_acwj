@@ -102,6 +102,14 @@ static int keyword(char *s) {
     if (!strcmp(s, "int")) {
       return T_INT;
     }
+    if (!strcmp(s, "if")) {
+      return T_IF;
+    }
+    break;
+  case 'e':
+    if (!strcmp(s, "else")) {
+      return T_ELSE;
+    }
     break;
   }
   return (0);
@@ -148,29 +156,41 @@ int scan(struct token *t) {
   case '<':
     c = next();
     if (c == '=') {
-        t->token = T_LE;
+      t->token = T_LE;
     } else {
       putback(c);
       t->token = T_LT;
     }
     break;
-   case '>':
+  case '>':
     c = next();
-    if(c == '=') {
-        t->token = T_GE;
+    if (c == '=') {
+      t->token = T_GE;
     } else {
-        putback(c);
-        t->token = T_GT;
+      putback(c);
+      t->token = T_GT;
     }
     break;
-    case '!':
-     c = next();
-     if(c == '=') {
-         t->token = T_NE;
-     } else {
-         fatalc("Unrecognised character",c);
-     }
-     break;
+  case '!':
+    c = next();
+    if (c == '=') {
+      t->token = T_NE;
+    } else {
+      fatalc("Unrecognised character", c);
+    }
+    break;
+  case '(':
+    t->token = T_LPAREN;
+    break;
+  case ')':
+    t->token = T_RPAREN;
+    break;
+  case '{':
+    t->token = T_LABRCE;
+    break;
+  case '}':
+    t->token = T_RABRCE;
+    break;
   default:
 
     // If it's a digit, scan the

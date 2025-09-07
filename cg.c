@@ -1,5 +1,6 @@
 #include "data.h"
 #include "decl.h"
+#include "defs.h"
 #include <stdio.h>
 
 // Code generator for x86-64
@@ -172,3 +173,70 @@ int cglessequal(int r1, int r2) { return cgcompare(r1, r2, "setle"); }
 // >
 int cggreaterthan(int r1, int r2) { return cgcompare(r1, r2, "setg"); }
 int cggreaterequal(int r1, int r2) { return cgcompare(r1, r2, "setge"); }
+
+int cgcompare_and_set(int AstOp, int r1, int r2) {
+  fprintf(Outfile, "\tcmpq\t%s,%s\n", reglist[r1], reglist[r2]);
+  switch (AstOp) {
+  case A_EQ:
+    fprintf(Outfile, "\t%s,%s\n", "sete", breglist[r2]);
+    break;
+  case A_NE:
+    fprintf(Outfile, "\t%s,%s\n", "setne", breglist[r2]);
+    break;
+  case A_LT:
+    fprintf(Outfile, "\t%s,%s\n", "setl", breglist[r2]);
+    break;
+
+  case A_GT:
+    fprintf(Outfile, "\t%s,%s\n", "setg", breglist[r2]);
+    break;
+
+  case A_LE:
+    fprintf(Outfile, "\t%s,%s\n", "setle", breglist[r2]);
+    break;
+
+  case A_GE:
+    fprintf(Outfile, "\t%s,%s\n", "setge", breglist[r2]);
+    break;
+
+  default:
+    fatal("bad ast op in cgcompare_and_set()");
+  }
+  fprintf(Outfile, "\tmovzbq\t%s, %s\n", breglist[r2], reglist[r2]);
+
+  free_register(r1);
+  return r2;
+}
+
+int cgcompare_and_jump(int AstOp, int r1, int r2, int l) {
+  fprintf(Outfile, "\tcmpq\t%s,%s\n", reglist[r1], reglist[r2]);
+  switch (AstOp) {
+  case A_EQ:
+    fprintf(Outfile, "\t%s\tL%d\n", "je", l);
+    break;
+  case A_NE:
+    fprintf(Outfile, "\t%s\tL%d\n", "jne", l);
+    break;
+  case A_LT:
+    fprintf(Outfile, "\t%s\tL%d\n", "jl", l);
+    break;
+  case A_GT:
+    fprintf(Outfile, "\t%s\tL%d\n", "jg", l);
+    break;
+  case A_LE:
+    fprintf(Outfile, "\t%s\tL%d\n", "jle", l);
+    break;
+  case A_GE:
+    fprintf(Outfile, "\t%s\tL%d\n", "jge", l);
+    break;
+  default:
+    fatal("bad ast op in cgcompare_and_jump()");
+    break;
+  }
+  freeall_registers();
+  return -1;
+}
+
+void cglabel(int l) { fprintf(Outfile, "L%d:\n", l); }
+
+void cgjump(int l) { fprintf(Outfile, "\tjmp\tL%d\n", l); }

@@ -1,5 +1,5 @@
-#include "data.h"
 #include "decl.h"
+#include "defs.h"
 // Parsing of statements
 // Copyright (c) 2019 Warren Toomey, GPL3
 
@@ -10,27 +10,12 @@
 // statement: 'print' expression ';'
 //            'int' identifier ';
 //            identifier '=' expression ';'
+//            | if_statement;
 // identifier: T_IDENT
 //      ;
+// if_statement: 'if' '(' true_or_false_expression ')''{' (statement |
+// statements)* '}'
+//                ['else' '{' (statement | statements)* '}']
 
 // Parse one or more statements
-void statements(void) {
-  while (1) {
-    switch (Token.token) {
-    case T_PRINT:
-      print_statement();
-      break;
-    case T_INT:
-      var_declaration();
-      break;
-    case T_IDENT:
-      assignment_statement();
-      break;
-    case T_EOF:
-      return;
-    default:
-      fatald("Syntax error, token", Token.token);
-      break;
-    }
-  }
-}
+struct ASTnode *statements() { return compound_statement(); }

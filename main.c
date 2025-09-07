@@ -53,7 +53,8 @@ int main(int argc, char *argv[]) {
 
   scan(&Token);			// Get the first token from the input
   genpreamble();		// Output the preamble
-  statements();			// Parse the statements in the input
+  struct ASTnode *tree = statements();			// Parse the statements in the input
+  genAST(tree, -1, 0);
   genpostamble();		// Output the postamble
   fclose(Outfile);		// Close the output file and exit
   fclose(Infile);
