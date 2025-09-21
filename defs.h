@@ -37,6 +37,7 @@ enum {
   T_IF,
   T_ELSE,
   T_WHILE,
+  T_FOR,
 };
 
 // Token structure

@@ -62,6 +62,8 @@ struct ASTnode * assignment_statement();
 struct ASTnode *compound_statement();
 struct ASTnode *if_statement();
 struct ASTnode *while_statement();
+struct ASTnode *single_statement();
+struct ASTnode *for_statement();
 
 // misc.c
 void match(int t, char *what);

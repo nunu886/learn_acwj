@@ -1,5 +1,5 @@
-#include "decl.h"
 #include "data.h"
+#include "decl.h"
 #include "defs.h"
 #include <string.h>
 // Parsing of statements
@@ -23,7 +23,6 @@
 
 // Parse one or more statements
 struct ASTnode *statements() { return compound_statement(); }
-
 
 struct ASTnode *print_statement(void) {
   struct ASTnode *tree = NULL;
@@ -65,6 +64,35 @@ struct ASTnode *assignment_statement() {
   return tree;
 }
 
+struct ASTnode *single_statement() {
+  struct ASTnode *tree = NULL;
+  switch (Token.token) {
+  case T_PRINT:
+    tree = print_statement();
+    break;
+  case T_INT:
+    var_declaration();
+    tree = NULL;
+    break;
+  case T_IDENT:
+    tree = assignment_statement();
+    break;
+  case T_IF:
+    tree = if_statement();
+    break;
+  case T_WHILE:
+    tree = while_statement();
+    break;
+  case T_FOR:
+    tree = for_statement();
+    break;
+  default:
+    fatald("Syntax error, token", Token.token);
+  }
+
+  return tree;
+}
+
 struct ASTnode *compound_statement() {
   struct ASTnode *left = NULL;
   struct ASTnode *tree = NULL;
@@ -72,29 +100,10 @@ struct ASTnode *compound_statement() {
   lbrace();
 
   while (1) {
-    switch (Token.token) {
-    case T_PRINT:
-      tree = print_statement();
-      break;
-    case T_INT:
-      var_declaration();
-      tree = NULL;
-      break;
-    case T_IDENT:
-      tree = assignment_statement();
-      break;
-    case T_IF:
-      tree = if_statement();
-      break;
-    case T_WHILE:
-      tree = while_statement();
-      break;
-    case T_RABRCE:
-      rbrace();
-      return left;
-    default:
-      fatald("Syntax error, token", Token.token);
-    }
+    tree = single_statement();
+    // if (tree != NULL && tree->op == A_ASSIGN) {
+    //   semi();
+    // }
 
     if (tree) {
       if (left == NULL) {
@@ -102,6 +111,11 @@ struct ASTnode *compound_statement() {
       } else {
         left = mkastnode(A_GLUE, left, NULL, tree, 0);
       }
+    }
+
+    if (Token.token == T_RABRCE) {
+      rbrace();
+      return left;
     }
   }
 }
@@ -131,20 +145,51 @@ struct ASTnode *if_statement() {
 }
 
 struct ASTnode *while_statement() {
-    struct ASTnode *condAST = NULL;
-    struct ASTnode *bodyAST = NULL;
+  struct ASTnode *condAST = NULL;
+  struct ASTnode *bodyAST = NULL;
 
-    match(T_WHILE, "while");
-    lparen();
+  match(T_WHILE, "while");
+  lparen();
 
-    condAST = binexpr(0);
-    // add a function if op is A_EQ -- A_GE
-    // switch(condAST->op)
-    rparen();
+  condAST = binexpr(0);
+  // add a function if op is A_EQ -- A_GE
+  // switch(condAST->op)
+  rparen();
 
-    // {
-    bodyAST = compound_statement();
-    // }
+  // {
+  bodyAST = compound_statement();
+  // }
 
-    return mkastnode(A_WHILE, condAST, NULL, bodyAST, 0);
+  return mkastnode(A_WHILE, condAST, NULL, bodyAST, 0);
+}
+
+// for(i = 0; i < 10; i++){
+//
+//}
+// while statement instance of for statement;
+struct ASTnode *for_statement() {
+  struct ASTnode *init = NULL;
+  struct ASTnode *cond = NULL;
+  struct ASTnode *incr = NULL;
+  struct ASTnode *body = NULL;
+  struct ASTnode *tree = NULL;
+
+  match(T_FOR, "for");
+  lparen();
+
+  init = single_statement();
+
+  cond = binexpr(0);
+  semi();
+  // cond expr syntax check
+  //
+  incr = single_statement();
+  // skip ')'
+  rparen();
+
+  body = compound_statement();
+  tree = mkastnode(A_GLUE, body, NULL, incr, 0);
+  tree = mkastnode(A_WHILE, cond, NULL, tree, 0);
+
+  return mkastnode(A_GLUE, init, NULL, tree, 0);
 }

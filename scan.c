@@ -116,6 +116,11 @@ static int keyword(char *s) {
       return T_WHILE;
     }
     break;
+  case 'f':
+    if (!strcmp(s, "for")) {
+      return T_FOR;
+    }
+    break;
   }
   return (0);
 }
