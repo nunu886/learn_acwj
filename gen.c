@@ -41,15 +41,35 @@ static int genIFAST(struct ASTnode *n) {
   return -1;
 }
 
+int genWhile(struct ASTnode *n) {
+  int Lstart = label();
+  int Lend = label();
+  cglabel(Lstart);
+
+  // gen
+  genAST(n->left, Lend, n->op);
+  genfreeregs();
+
+  genAST(n->right, -1, n->op);
+  genfreeregs();
+
+  cgjump(Lstart);
+  cglabel(Lend);
+  return -1;
+}
+
 // Given an AST, generate
 // assembly code recursively
 int genAST(struct ASTnode *n, int reg, int parentASTop) {
+  // printf("reg:  %d\n", reg);
   int leftreg = 0;
   int rightreg = 0;
 
   switch (n->op) {
   case A_IF:
     return genIFAST(n);
+  case A_WHILE:
+    return genWhile(n);
   case A_GLUE:
     genAST(n->left, -1, n->op);
     genAST(n->right, -1, n->op);
@@ -59,7 +79,7 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
   }
 
   // Get the left and right sub-tree values
-  if (n->left){
+  if (n->left) {
     leftreg = genAST(n->left, -1, n->op);
   }
   if (n->right) {
@@ -92,7 +112,7 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
   case A_LT:
   case A_LE:
   case A_GE:
-    if (parentASTop == A_IF) {
+    if (parentASTop == A_IF || parentASTop == A_WHILE) {
       return cgcompare_and_jump(n->op, leftreg, rightreg, reg);
     } else {
       return (cgcompare_and_set(n->op, leftreg, rightreg));

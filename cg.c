@@ -212,22 +212,22 @@ int cgcompare_and_jump(int AstOp, int r1, int r2, int l) {
   fprintf(Outfile, "\tcmpq\t%s,%s\n", reglist[r1], reglist[r2]);
   switch (AstOp) {
   case A_EQ:
-    fprintf(Outfile, "\t%s\tL%d\n", "je", l);
-    break;
-  case A_NE:
     fprintf(Outfile, "\t%s\tL%d\n", "jne", l);
     break;
+  case A_NE:
+    fprintf(Outfile, "\t%s\tL%d\n", "je", l);
+    break;
   case A_LT:
-    fprintf(Outfile, "\t%s\tL%d\n", "jl", l);
-    break;
-  case A_GT:
-    fprintf(Outfile, "\t%s\tL%d\n", "jg", l);
-    break;
-  case A_LE:
     fprintf(Outfile, "\t%s\tL%d\n", "jle", l);
     break;
-  case A_GE:
+  case A_GT:
     fprintf(Outfile, "\t%s\tL%d\n", "jge", l);
+    break;
+  case A_LE:
+    fprintf(Outfile, "\t%s\tL%d\n", "jl", l);
+    break;
+  case A_GE:
+    fprintf(Outfile, "\t%s\tL%d\n", "jg", l);
     break;
   default:
     fatal("bad ast op in cgcompare_and_jump()");

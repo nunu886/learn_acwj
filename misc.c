@@ -39,7 +39,7 @@ void lbrace() {
 }
 
 void rbrace() {
-    match(T_RABRCE, "{");
+    match(T_RABRCE, "}");
 }
 
 void fatal(char *s) {

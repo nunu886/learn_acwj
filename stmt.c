@@ -86,6 +86,9 @@ struct ASTnode *compound_statement() {
     case T_IF:
       tree = if_statement();
       break;
+    case T_WHILE:
+      tree = while_statement();
+      break;
     case T_RABRCE:
       rbrace();
       return left;
@@ -125,4 +128,23 @@ struct ASTnode *if_statement() {
   }
 
   return mkastnode(A_IF, condAST, trueAST, falseAST, 0);
+}
+
+struct ASTnode *while_statement() {
+    struct ASTnode *condAST = NULL;
+    struct ASTnode *bodyAST = NULL;
+
+    match(T_WHILE, "while");
+    lparen();
+
+    condAST = binexpr(0);
+    // add a function if op is A_EQ -- A_GE
+    // switch(condAST->op)
+    rparen();
+
+    // {
+    bodyAST = compound_statement();
+    // }
+
+    return mkastnode(A_WHILE, condAST, NULL, bodyAST, 0);
 }

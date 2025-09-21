@@ -36,6 +36,7 @@ enum {
   T_RPAREN, //( )
   T_IF,
   T_ELSE,
+  T_WHILE,
 };
 
 // Token structure
@@ -62,6 +63,7 @@ enum {
   A_IDENT,
   A_GLUE,
   A_IF,
+  A_WHILE,
   A_PRINT,
 };
 

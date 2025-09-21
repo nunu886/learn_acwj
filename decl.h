@@ -20,6 +20,7 @@ void genpreamble();
 void genpostamble();
 void genfreeregs();
 void genprintint(int reg);
+int genWhile(struct ASTnode *n);
 
 // cg.c
 void freeall_registers(void);
