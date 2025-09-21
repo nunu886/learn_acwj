@@ -60,6 +60,7 @@ void var_declaration();
 struct ASTnode * assignment_statement();
 struct ASTnode *compound_statement();
 struct ASTnode *if_statement();
+struct ASTnode *while_statement();
 
 // misc.c
 void match(int t, char *what);
