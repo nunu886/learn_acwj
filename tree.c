@@ -22,7 +22,7 @@ struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *mid,
   if (op == A_INTLIT) {
     n->v.intvalue = intvalue;
   }
-  if (op == A_LVIDENT || op== A_IDENT) {
+  if (op == A_LVIDENT || op == A_IDENT || op == A_FUNCTION) {
     n->v.id = intvalue;
   }
 

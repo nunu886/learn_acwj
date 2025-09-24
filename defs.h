@@ -38,6 +38,7 @@ enum {
   T_ELSE,
   T_WHILE,
   T_FOR,
+  T_VOID,
 };
 
 // Token structure
@@ -66,6 +67,7 @@ enum {
   A_IF,
   A_WHILE,
   A_PRINT,
+  A_FUNCTION,
 };
 
 // Abstract Syntax Tree structure

@@ -44,6 +44,8 @@ int cggreaterthan(int r1, int r2);
 int cglessequal(int r1, int r2);
 int cggreaterequal(int r1, int r2);
 int cgcompare(int r1, int r2, char *how);
+void cgfuncpreamble(char *name);
+void cgfuncpostamble();
 
 int cgcompare_and_set(int AstOp,int r1, int r2);
 int cgcompare_and_jump(int AstOp,int r1, int r2, int l);
@@ -57,13 +59,17 @@ struct ASTnode *primary();
 // stmt.c
 struct ASTnode *  statements();
 struct ASTnode * print_statement();
-void var_declaration();
 struct ASTnode * assignment_statement();
 struct ASTnode *compound_statement();
 struct ASTnode *if_statement();
 struct ASTnode *while_statement();
 struct ASTnode *single_statement();
 struct ASTnode *for_statement();
+
+//decl.c
+void var_declaration();
+struct ASTnode *function_declaration();
+
 
 // misc.c
 void match(int t, char *what);

@@ -53,9 +53,14 @@ int main(int argc, char *argv[]) {
 
   scan(&Token);			// Get the first token from the input
   genpreamble();		// Output the preamble
-  struct ASTnode *tree = statements();			// Parse the statements in the input
-  genAST(tree, -1, 0);
-  genpostamble();		// Output the postamble
+  struct ASTnode *tree = NULL;
+  while (1) {
+    tree = function_declaration();			// Parse the statements in the input
+    genAST(tree, -1, 0);
+    if (Token.token == T_EOF) {
+        break;
+    }
+  }
   fclose(Outfile);		// Close the output file and exit
   fclose(Infile);
   return 0;

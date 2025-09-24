@@ -43,7 +43,7 @@ static void free_register(int reg) {
 // Print out the assembly preamble
 void cgpreamble() {
   freeall_registers();
-  fputs("\t.text\n"
+  fputs(".text\n"
         ".LC0:\n"
         "\t.string\t\"%d\\n\"\n"
         "printint:\n"
@@ -58,13 +58,24 @@ void cgpreamble() {
         "\tcall	printf@PLT\n"
         "\tnop\n"
         "\tleave\n"
-        "\tret\n"
-        "\n"
-        "\t.globl\tmain\n"
-        "\t.type\tmain, @function\n"
-        "main:\n"
-        "\tpushq\t%rbp\n"
-        "\tmovq	%rsp, %rbp\n",
+        "\tret\n",
+        Outfile);
+}
+
+void cgfuncpreamble(char *name) {
+  fprintf(Outfile,
+          ".text\n"
+          "\t.globl\t%s\n"
+          "\t.type\t%s, @function\n"
+          "%s:\n\tpushq\t%%rbp\n"
+          "\tmovq\t%%rsp,  %%rbp\n",
+          name, name, name);
+}
+
+void cgfuncpostamble() {
+  fputs("\tmovl $0, %eax\n"
+        "\tpopq\t%rbp\n"
+        "\tret\n",
         Outfile);
 }
 
@@ -141,7 +152,7 @@ int cgstorglob(int r, char *identifier) {
   return r;
 }
 
-void cgglobsym(char *sym) { fprintf(Outfile, "\t.comm\t%s,8,8\n", sym); }
+void cgglobsym(char *sym) { fprintf(Outfile, ".comm\t%s,8,8\n", sym); }
 
 void genglobsym(char *s) { cgglobsym(s); }
 

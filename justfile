@@ -12,7 +12,7 @@ buildall:
      cc_buildn
 
 comp_ac:zig_build
-    ./zig-out/bin/lacwj ./test/test_for.ac
+    ./zig-out/bin/lacwj ./test/test_function.ac
 
 as:comp_ac
    cc -o out out.s
