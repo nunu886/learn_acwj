@@ -9,10 +9,10 @@
 int scan(struct token *t);
 
 // tree.c
-struct ASTnode *mkastnode(int op, struct ASTnode *left, struct ASTnode *mid,
+struct ASTnode *mkastnode(int op, int type, struct ASTnode *left, struct ASTnode *mid,
                           struct ASTnode *right, int intvalue);
-struct ASTnode *mkastleaf(int op, int intvalue);
-struct ASTnode *mkastunary(int op, struct ASTnode *left, int intvalue);
+struct ASTnode *mkastleaf(int op, int type, int intvalue);
+struct ASTnode *mkastunary(int op, int type, struct ASTnode *left, int intvalue);
 
 // gen.c
 int genAST(struct ASTnode *n, int reg, int parentASTop);
@@ -32,10 +32,10 @@ int cgsub(int r1, int r2);
 int cgmul(int r1, int r2);
 int cgdiv(int r1, int r2);
 void cgprintint(int r);
-int cgloadglob(char *identifier);
+int cgloadglob(int id);
 int cgstorglob(int r, char *identifier);
-void cgglobsym(char *sym);
-void genglobsym(char *s);
+void cgglobsym(int id);
+void genglobsym(int id);
 int cgloadint(int value);
 int cgequal(int r1, int r2);
 int cgnotequal(int r1, int r2);
@@ -46,9 +46,10 @@ int cggreaterequal(int r1, int r2);
 int cgcompare(int r1, int r2, char *how);
 void cgfuncpreamble(char *name);
 void cgfuncpostamble();
+int cgwiden(int r, int oldtype, int newtype);
 
-int cgcompare_and_set(int AstOp,int r1, int r2);
-int cgcompare_and_jump(int AstOp,int r1, int r2, int l);
+int cgcompare_and_set(int AstOp, int r1, int r2);
+int cgcompare_and_jump(int AstOp, int r1, int r2, int l);
 void cglabel(int l);
 void cgjump(int l);
 
@@ -57,19 +58,19 @@ struct ASTnode *binexpr(int ptp);
 struct ASTnode *primary();
 
 // stmt.c
-struct ASTnode *  statements();
-struct ASTnode * print_statement();
-struct ASTnode * assignment_statement();
+struct ASTnode *statements();
+struct ASTnode *print_statement();
+struct ASTnode *assignment_statement();
 struct ASTnode *compound_statement();
 struct ASTnode *if_statement();
 struct ASTnode *while_statement();
 struct ASTnode *single_statement();
 struct ASTnode *for_statement();
 
-//decl.c
+// decl.c
 void var_declaration();
 struct ASTnode *function_declaration();
-
+int parse_type(int type);
 
 // misc.c
 void match(int t, char *what);
@@ -88,6 +89,8 @@ void rbrace();
 // sym.c
 int findglob(char *s);
 static int newglob();
-int addglob(char *name);
+int addglob(char *name, int type, int stype);
 
+//types.c
+int type_compatiable(int *left, int *right, int onlyright);
 #endif

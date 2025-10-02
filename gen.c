@@ -103,7 +103,7 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
     // printf("INTLIT------------- %d\n", n->v.intvalue);
     return (cgloadint(n->v.intvalue));
   case A_IDENT:
-    return (cgloadglob(Gsym[n->v.id].name));
+    return (cgloadglob(n->v.id));
   case A_LVIDENT:
     // printf("------------- %d\n", rightreg);
     return (cgstorglob(reg, Gsym[n->v.id].name));
@@ -125,6 +125,8 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
     genprintint(leftreg);
     genfreeregs();
     return (-1);
+  case A_WIDEN:
+    return cgwiden(leftreg, n->left->type, n->type);
   default:
     fprintf(stderr, "Unknown AST operator %d\n", n->op);
     exit(1);

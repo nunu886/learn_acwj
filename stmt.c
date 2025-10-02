@@ -34,7 +34,18 @@ struct ASTnode *print_statement(void) {
   // Parse the following expression and
   // generate the assembly code
   tree = binexpr(0);
-  tree = mkastunary(A_PRINT, tree, 0);
+  int lefttype = P_INT;
+  int righttype = tree->type;
+
+  if (!type_compatiable(&lefttype, &righttype, 0)) {
+    fatal("incompatible types");
+  }
+
+  if (righttype) {
+    tree = mkastunary(righttype, P_INT, tree, 0);
+  }
+
+  tree = mkastunary(A_PRINT, P_INT, tree, 0);
   // printf("<<<< %d \n", reg)
   // Match the following semicolon
   semi();
@@ -53,11 +64,18 @@ struct ASTnode *assignment_statement() {
   if (id == -1) {
     fatals("Undeclared variable", Text);
   }
-  right = mkastleaf(A_LVIDENT, id);
+  right = mkastleaf(A_LVIDENT, Gsym[id].type, id);
   match(T_EQUALS, "=");
 
   left = binexpr(0);
-  tree = mkastnode(A_ASSIGN, left, NULL, right, 0);
+  int lefttype = left->type;
+  int righttype = right->type;
+
+  if (!type_compatiable(&lefttype, &righttype, 0)) {
+    fatal("incompatible types");
+  }
+
+  tree = mkastnode(A_ASSIGN, P_INT, left, NULL, right, 0);
 
   semi();
 
@@ -70,6 +88,7 @@ struct ASTnode *single_statement() {
   case T_PRINT:
     tree = print_statement();
     break;
+  case T_CHAR:
   case T_INT:
     var_declaration();
     tree = NULL;
@@ -109,7 +128,7 @@ struct ASTnode *compound_statement() {
       if (left == NULL) {
         left = tree;
       } else {
-        left = mkastnode(A_GLUE, left, NULL, tree, 0);
+        left = mkastnode(A_GLUE, P_NONE, left, NULL, tree, 0);
       }
     }
 
@@ -141,7 +160,7 @@ struct ASTnode *if_statement() {
     falseAST = compound_statement();
   }
 
-  return mkastnode(A_IF, condAST, trueAST, falseAST, 0);
+  return mkastnode(A_IF, P_NONE, condAST, trueAST, falseAST, 0);
 }
 
 struct ASTnode *while_statement() {
@@ -160,7 +179,7 @@ struct ASTnode *while_statement() {
   bodyAST = compound_statement();
   // }
 
-  return mkastnode(A_WHILE, condAST, NULL, bodyAST, 0);
+  return mkastnode(A_WHILE, P_NONE, condAST, NULL, bodyAST, 0);
 }
 
 // for(i = 0; i < 10; i++){
@@ -188,8 +207,8 @@ struct ASTnode *for_statement() {
   rparen();
 
   body = compound_statement();
-  tree = mkastnode(A_GLUE, body, NULL, incr, 0);
-  tree = mkastnode(A_WHILE, cond, NULL, tree, 0);
+  tree = mkastnode(A_GLUE, P_NONE, body, NULL, incr, 0);
+  tree = mkastnode(A_WHILE, P_NONE, cond, NULL, tree, 0);
 
-  return mkastnode(A_GLUE, init, NULL, tree, 0);
+  return mkastnode(A_GLUE, P_NONE, init, NULL, tree, 0);
 }

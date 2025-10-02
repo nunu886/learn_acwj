@@ -16,14 +16,18 @@ struct ASTnode *primary() {
   // for any other token type.
   switch (Token.token) {
   case T_INTLIT:
-    n = mkastleaf(A_INTLIT, Token.intvalue);
+    if (Token.intvalue >= 0 && Token.intvalue <= 255) {
+      n = mkastleaf(A_INTLIT, P_CHAR, Token.intvalue);
+    } else {
+      n = mkastleaf(A_INTLIT, P_INT, Token.intvalue);
+    }
     break;
   case T_IDENT:
     id = findglob(Text);
     if (id == -1) {
       fatals("Unknown variable", Text);
     }
-    n = mkastleaf(A_IDENT, id);
+    n = mkastleaf(A_IDENT, Gsym[id].type, id);
     break;
   default:
     fatald("Syntax error on token %d", Token.token);
@@ -134,9 +138,23 @@ struct ASTnode *binexpr(int ptp) {
     int prec = op_precedence(tokentype);
     right = binexpr(prec);
 
+    int lefttype = left->type;
+    int righttype = right->type;
+
+    if (!type_compatiable(&lefttype, &righttype, 0)) {
+      fatal("incompatible types");
+    }
+
+    if (lefttype) {
+      left = mkastunary(lefttype, righttype, left, 0);
+    }
+    if (righttype) {
+      right = mkastunary(righttype, lefttype, right, 0);
+    }
+
     // Join that sub-tree with ours. Convert the token
     // into an AST operation at the same time.
-    left = mkastnode(arithop(tokentype), left, NULL, right, 0);
+    left = mkastnode(arithop(tokentype), left->type, left, NULL, right, 0);
 
     // Update the details of the current token.
     // If we hit a semicolon, return just the left node

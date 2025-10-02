@@ -141,9 +141,13 @@ void cgprintint(int r) {
   free_register(r);
 }
 
-int cgloadglob(char *identifier) {
+int cgloadglob(int id) {
   int r = alloc_register();
-  fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", identifier, reglist[r]);
+  if (Gsym[id].type == P_INT) {
+      fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+  } else {
+      fprintf(Outfile, "\tmovzbq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+  }
   return r;
 }
 
@@ -152,9 +156,15 @@ int cgstorglob(int r, char *identifier) {
   return r;
 }
 
-void cgglobsym(char *sym) { fprintf(Outfile, ".comm\t%s,8,8\n", sym); }
+void cgglobsym(int id) {
+  if (Gsym[id].type == P_INT) {
+    fprintf(Outfile, ".comm\t%s,8,8\n", Gsym[id].name);
+  } else {
+    fprintf(Outfile, ".comm\t%s,1,1\n", Gsym[id].name);
+  }
+}
 
-void genglobsym(char *s) { cgglobsym(s); }
+void genglobsym(int id) { cgglobsym(id); }
 
 // load an integer literal value into a register.
 // return a register
@@ -251,3 +261,8 @@ int cgcompare_and_jump(int AstOp, int r1, int r2, int l) {
 void cglabel(int l) { fprintf(Outfile, "L%d:\n", l); }
 
 void cgjump(int l) { fprintf(Outfile, "\tjmp\tL%d\n", l); }
+
+int cgwiden(int r, int oldtype, int newtype) {
+
+    return r;
+}

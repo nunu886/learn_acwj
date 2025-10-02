@@ -126,6 +126,11 @@ static int keyword(char *s) {
       return T_VOID;
     }
     break;
+  case 'c':
+    if (!strcmp(s, "char")) {
+      return T_CHAR;
+    }
+    break;
   }
   return (0);
 }

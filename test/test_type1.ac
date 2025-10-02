@@ -1,0 +1,9 @@
+void main(){
+    char j;
+    j = 255;
+    print j;
+    int i;
+    for (i = j - 1; i < j; i = i + 1;) {
+        print i;
+    }
+}

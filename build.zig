@@ -24,6 +24,7 @@ pub fn build(b: *std.Build) void {
                 "tree.c",
                 "decl.c",
                 "sym.c",
+                "types.c",
             },
             .flags = &.{},
         },

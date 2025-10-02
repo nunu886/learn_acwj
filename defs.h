@@ -29,8 +29,8 @@ enum {
   T_PRINT,
   T_INT,
   T_EQUALS,
-  T_IDENT, // int, =, "var"
-  T_LABRCE,//{ }
+  T_IDENT,  // int, =, "var"
+  T_LABRCE, //{ }
   T_RABRCE,
   T_LPAREN,
   T_RPAREN, //( )
@@ -39,6 +39,14 @@ enum {
   T_WHILE,
   T_FOR,
   T_VOID,
+  T_CHAR,
+};
+
+enum {
+  P_NONE,
+  P_VOID,
+  P_INT,
+  P_CHAR,
 };
 
 // Token structure
@@ -68,11 +76,19 @@ enum {
   A_WHILE,
   A_PRINT,
   A_FUNCTION,
+  A_WIDEN,
+};
+
+enum {
+  S_VARIABLE,
+  S_FUNCTION,
 };
 
 // Abstract Syntax Tree structure
 struct ASTnode {
-  int op;               // "Operation" to be performed on this tree
+  int op;   // "Operation" to be performed on this tree
+  int type; //
+  int stype;
   struct ASTnode *left; // Left and right child trees
   struct ASTnode *mid;
   struct ASTnode *right;
@@ -85,6 +101,8 @@ struct ASTnode {
 // Symbol table
 struct symtable {
   char *name;
+  int type;
+  int stype;
 };
 
 #endif
