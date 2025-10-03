@@ -6,6 +6,16 @@
 // Lexical scanning
 // Copyright (c) 2019 Warren Toomey, GPL3
 
+static struct token *Rejtoken = NULL;
+
+void reject_token(struct token *t) {
+  if (Rejtoken != NULL) {
+    fatal("can not reject token twice");
+  }
+
+  Rejtoken = t;
+}
+
 // Return the position of character c
 // in string s, or -1 if c not found
 static int chrpos(char *s, int c) {
@@ -95,7 +105,7 @@ static int scanident(int c, char *buf, int lim) {
 static int keyword(char *s) {
   switch (*s) {
   case 'p':
-    if (!strcmp(s, "print"))
+    if (!strcmp(s, "printint"))
       return (T_PRINT);
     break;
   case 'i':
@@ -131,6 +141,11 @@ static int keyword(char *s) {
       return T_CHAR;
     }
     break;
+  case 'r':
+    if (!strcmp(s, "return")) {
+      return T_RETURN;
+    }
+    break;
   }
   return (0);
 }
@@ -139,6 +154,12 @@ static int keyword(char *s) {
 // Return 1 if token valid, 0 if no tokens left.
 int scan(struct token *t) {
   int c, tokentype;
+
+  if (Rejtoken != NULL) {
+    t = Rejtoken;
+    Rejtoken = NULL;
+    return 1;
+  }
 
   // Skip whitespace
   c = skip();

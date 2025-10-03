@@ -1,7 +1,6 @@
 #include "decl.h"
 #include "data.h"
 #include "defs.h"
-#include <stdio.h>
 
 int parse_type(int type) {
   switch (type) {
@@ -26,7 +25,7 @@ void var_declaration() {
   scan(&Token);
   ident();
 
-  int id = addglob(Text, type, S_VARIABLE);
+  int id = addglob(Text, type, S_VARIABLE,0);
   genglobsym(id);
   semi();
 }
@@ -34,16 +33,30 @@ void var_declaration() {
 struct ASTnode *function_declaration() {
   struct ASTnode *tree = NULL;
 
-  int nameslot = 0;
-  match(T_VOID, "void");
-  // int type = parse_type(Token.token);
+  // match(T_VOID, "void");
+  int type = parse_type(Token.token);
+  scan(&Token);
+
+  int endlabel = label();
   ident();
-  nameslot = addglob(Text, P_VOID, S_FUNCTION);
+  int nameslot = addglob(Text, type, S_FUNCTION, endlabel);
+  FunctionId = nameslot;
 
   lparen();
   rparen();
 
   tree = compound_statement();
+  if (type != P_VOID) {
+      struct ASTnode *finalstmt = NULL;
+      if (tree->op == A_GLUE) {
+          finalstmt = tree->right;
+      } else {
+          finalstmt = tree;
+      }
+      if (finalstmt == NULL || finalstmt->op != A_RETURN) {
+          fatal("no return for function with non-void type.");
+      }
+  }
 
-  return mkastunary(A_FUNCTION, P_VOID, tree, nameslot);
+  return mkastunary(A_FUNCTION, type, tree, nameslot);
 }

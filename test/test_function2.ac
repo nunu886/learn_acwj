@@ -1,0 +1,9 @@
+int fred() {
+    return 1+2;
+}
+
+void main() {
+    int i;
+    i = fred(0);
+    printint(i);
+}

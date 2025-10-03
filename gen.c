@@ -5,7 +5,7 @@
 // Generic code generator
 // Copyright (c) 2019 Warren Toomey, GPL3
 
-static int label() {
+int label() {
   static int id = 1;
   return id++;
 }
@@ -78,7 +78,7 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
   case A_FUNCTION:
     cgfuncpreamble(Gsym[n->v.id].name);
     genAST(n->left, -1, n->op);
-    cgfuncpostamble();
+    cgfuncpostamble(n->v.id);
     return -1;
   }
 
@@ -106,7 +106,7 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
     return (cgloadglob(n->v.id));
   case A_LVIDENT:
     // printf("------------- %d\n", rightreg);
-    return (cgstorglob(reg, Gsym[n->v.id].name));
+    return cgstorglob(reg, n->v.id);
   case A_ASSIGN:
     // this work has already done, return the result.
     return rightreg;
@@ -127,6 +127,11 @@ int genAST(struct ASTnode *n, int reg, int parentASTop) {
     return (-1);
   case A_WIDEN:
     return cgwiden(leftreg, n->left->type, n->type);
+  case A_RETURN:
+    cgreturn(leftreg, FunctionId);
+    return -1;
+  case A_FUNCCALL:
+    return cgcall(leftreg, n->v.id);
   default:
     fprintf(stderr, "Unknown AST operator %d\n", n->op);
     exit(1);

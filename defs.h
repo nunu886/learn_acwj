@@ -32,14 +32,15 @@ enum {
   T_IDENT,  // int, =, "var"
   T_LABRCE, //{ }
   T_RABRCE,
-  T_LPAREN,
-  T_RPAREN, //( )
+  T_LPAREN, //(
+  T_RPAREN, //)
   T_IF,
   T_ELSE,
   T_WHILE,
   T_FOR,
   T_VOID,
   T_CHAR,
+  T_RETURN,
 };
 
 enum {
@@ -47,6 +48,7 @@ enum {
   P_VOID,
   P_INT,
   P_CHAR,
+  P_LONG,
 };
 
 // Token structure
@@ -77,6 +79,8 @@ enum {
   A_PRINT,
   A_FUNCTION,
   A_WIDEN,
+  A_RETURN,
+  A_FUNCCALL,
 };
 
 enum {
@@ -103,6 +107,7 @@ struct symtable {
   char *name;
   int type;
   int stype;
+  int endlabel;
 };
 
 #endif

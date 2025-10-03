@@ -27,6 +27,11 @@ struct ASTnode *primary() {
     if (id == -1) {
       fatals("Unknown variable", Text);
     }
+    scan(&Token);
+    if (Token.token == T_LPAREN) {
+      return func_call();
+    }
+    reject_token(&Token);
     n = mkastleaf(A_IDENT, Gsym[id].type, id);
     break;
   default:
@@ -34,6 +39,21 @@ struct ASTnode *primary() {
   }
   scan(&Token);
   return (n);
+}
+
+struct ASTnode *func_call() {
+  struct ASTnode *tree = NULL;
+  int id = findglob(Text);
+  if (id == -1) {
+    fatals("Unknown function.", Text);
+  }
+  lparen();
+  tree = binexpr(0);
+
+  tree = mkastunary(A_FUNCCALL, Gsym[id].type, tree, id);
+
+  rparen();
+  return tree;
 }
 
 // Convert a binary operator token into an AST operation.

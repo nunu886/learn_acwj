@@ -6,7 +6,9 @@
 #define DECL_H
 #include "defs.h"
 
+//scan.c
 int scan(struct token *t);
+void reject_token(struct token *t);
 
 // tree.c
 struct ASTnode *mkastnode(int op, int type, struct ASTnode *left, struct ASTnode *mid,
@@ -33,7 +35,7 @@ int cgmul(int r1, int r2);
 int cgdiv(int r1, int r2);
 void cgprintint(int r);
 int cgloadglob(int id);
-int cgstorglob(int r, char *identifier);
+int cgstorglob(int r, int id);
 void cgglobsym(int id);
 void genglobsym(int id);
 int cgloadint(int value);
@@ -45,17 +47,21 @@ int cglessequal(int r1, int r2);
 int cggreaterequal(int r1, int r2);
 int cgcompare(int r1, int r2, char *how);
 void cgfuncpreamble(char *name);
-void cgfuncpostamble();
+void cgfuncpostamble(int id);
 int cgwiden(int r, int oldtype, int newtype);
 
 int cgcompare_and_set(int AstOp, int r1, int r2);
 int cgcompare_and_jump(int AstOp, int r1, int r2, int l);
 void cglabel(int l);
 void cgjump(int l);
+int cgprimsize(int type);
+int cgcall(int r, int id);
+void cgreturn(int reg, int id);
 
 // expr.c
 struct ASTnode *binexpr(int ptp);
 struct ASTnode *primary();
+struct ASTnode *func_call();
 
 // stmt.c
 struct ASTnode *statements();
@@ -66,6 +72,7 @@ struct ASTnode *if_statement();
 struct ASTnode *while_statement();
 struct ASTnode *single_statement();
 struct ASTnode *for_statement();
+struct ASTnode *return_statement();
 
 // decl.c
 void var_declaration();
@@ -89,8 +96,11 @@ void rbrace();
 // sym.c
 int findglob(char *s);
 static int newglob();
-int addglob(char *name, int type, int stype);
+int addglob(char *name, int type, int stype, int endlabel);
 
 //types.c
 int type_compatiable(int *left, int *right, int onlyright);
+
+//gen.c
+int label();
 #endif

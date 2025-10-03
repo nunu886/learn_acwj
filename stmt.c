@@ -29,11 +29,13 @@ struct ASTnode *print_statement(void) {
   int reg = 0;
 
   // Match a 'print' as the first token
-  match(T_PRINT, "print");
-
+  match(T_PRINT, "printint");
+  match(T_LPAREN, "(");
   // Parse the following expression and
   // generate the assembly code
   tree = binexpr(0);
+  match(T_RPAREN, ")");
+
   int lefttype = P_INT;
   int righttype = tree->type;
 
@@ -64,6 +66,11 @@ struct ASTnode *assignment_statement() {
   if (id == -1) {
     fatals("Undeclared variable", Text);
   }
+
+  if (Token.token == T_LPAREN) {
+      return func_call();
+  }
+
   right = mkastleaf(A_LVIDENT, Gsym[id].type, id);
   match(T_EQUALS, "=");
 
@@ -104,6 +111,9 @@ struct ASTnode *single_statement() {
     break;
   case T_FOR:
     tree = for_statement();
+    break;
+  case T_RETURN:
+    tree = return_statement();
     break;
   default:
     fatald("Syntax error, token", Token.token);
@@ -211,4 +221,25 @@ struct ASTnode *for_statement() {
   tree = mkastnode(A_WHILE, P_NONE, cond, NULL, tree, 0);
 
   return mkastnode(A_GLUE, P_NONE, init, NULL, tree, 0);
+}
+
+struct ASTnode *return_statement() {
+    struct ASTnode *tree = NULL;
+    int functype = Gsym[FunctionId].type;
+
+    if (functype == P_VOID) {
+        fatal("can not return from a void function.");
+    }
+
+    match(T_RETURN, "return");
+
+    tree = binexpr(0);
+    int returntype = tree->type;
+    if (!type_compatiable(&returntype, &functype, 1)) {
+        fatal("incompatible types.");
+    }
+
+    tree = mkastunary(A_RETURN, P_NONE, tree, 0);
+    semi();
+    return tree;
 }

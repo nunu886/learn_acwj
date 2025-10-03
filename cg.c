@@ -11,7 +11,7 @@
 static int freereg[4];
 static char *reglist[4] = {"%r8", "%r9", "%r10", "%r11"};
 static char *breglist[4] = {"%r8b", "%r9b", "%r10b", "%r11b"};
-
+static char *dreglist[4] = {"%r8d", "%r9d", "%r10d", "%r11d"};
 // Set all registers as available
 void freeall_registers(void) {
   freereg[0] = freereg[1] = freereg[2] = freereg[3] = 1;
@@ -43,23 +43,23 @@ static void free_register(int reg) {
 // Print out the assembly preamble
 void cgpreamble() {
   freeall_registers();
-  fputs(".text\n"
-        ".LC0:\n"
-        "\t.string\t\"%d\\n\"\n"
-        "printint:\n"
-        "\tpushq\t%rbp\n"
-        "\tmovq\t%rsp, %rbp\n"
-        "\tsubq\t$16, %rsp\n"
-        "\tmovl\t%edi, -4(%rbp)\n"
-        "\tmovl\t-4(%rbp), %eax\n"
-        "\tmovl\t%eax, %esi\n"
-        "\tleaq	.LC0(%rip), %rdi\n"
-        "\tmovl	$0, %eax\n"
-        "\tcall	printf@PLT\n"
-        "\tnop\n"
-        "\tleave\n"
-        "\tret\n",
-        Outfile);
+  // fputs(".text\n"
+  //       ".LC0:\n"
+  //       "\t.string\t\"%d\\n\"\n"
+  //       "printint:\n"
+  //       "\tpushq\t%rbp\n"
+  //       "\tmovq\t%rsp, %rbp\n"
+  //       "\tsubq\t$16, %rsp\n"
+  //       "\tmovl\t%edi, -4(%rbp)\n"
+  //       "\tmovl\t-4(%rbp), %eax\n"
+  //       "\tmovl\t%eax, %esi\n"
+  //       "\tleaq	.LC0(%rip), %rdi\n"
+  //       "\tmovl	$0, %eax\n"
+  //       "\tcall	printf@PLT\n"
+  //       "\tnop\n"
+  //       "\tleave\n"
+  //       "\tret\n",
+  //       Outfile);
 }
 
 void cgfuncpreamble(char *name) {
@@ -72,9 +72,9 @@ void cgfuncpreamble(char *name) {
           name, name, name);
 }
 
-void cgfuncpostamble() {
-  fputs("\tmovl $0, %eax\n"
-        "\tpopq\t%rbp\n"
+void cgfuncpostamble(int id) {
+  cglabel(Gsym[id].endlabel);
+  fputs("\tpopq\t%rbp\n"
         "\tret\n",
         Outfile);
 }
@@ -143,25 +143,44 @@ void cgprintint(int r) {
 
 int cgloadglob(int id) {
   int r = alloc_register();
-  if (Gsym[id].type == P_INT) {
-      fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
-  } else {
-      fprintf(Outfile, "\tmovzbq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+  switch (Gsym[id].type) {
+  case P_INT:
+    fprintf(Outfile, "\tmovzbl\t%s(\%%rip), %s\n", Gsym[id].name, dreglist[r]);
+    break;
+  case P_CHAR:
+    fprintf(Outfile, "\tmovzbq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+    break;
+  case P_LONG:
+    fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+    break;
+  default:
+    fatald("bad type in cgloadglob function.", Gsym[id].type);
   }
+
   return r;
 }
 
-int cgstorglob(int r, char *identifier) {
-  fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], identifier);
+int cgstorglob(int r, int id) {
+  char *identifier = Gsym[id].name;
+  switch (Gsym[id].type) {
+  case P_INT:
+    fprintf(Outfile, "\tmovl\t%s, %s(\%%rip)\n", dreglist[r], identifier);
+    break;
+  case P_CHAR:
+    fprintf(Outfile, "\tmovb\t%s, %s(\%%rip)\n", breglist[r], identifier);
+    break;
+  case P_LONG:
+    fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], identifier);
+    break;
+  default:
+    fatald("bad type in cgloadglob function.", Gsym[id].type);
+  }
   return r;
 }
 
 void cgglobsym(int id) {
-  if (Gsym[id].type == P_INT) {
-    fprintf(Outfile, ".comm\t%s,8,8\n", Gsym[id].name);
-  } else {
-    fprintf(Outfile, ".comm\t%s,1,1\n", Gsym[id].name);
-  }
+  int typesize = cgprimsize(Gsym[id].type);
+  fprintf(Outfile, "\t.comm\t%s, %d,%d\n", Gsym[id].name, typesize, typesize);
 }
 
 void genglobsym(int id) { cgglobsym(id); }
@@ -262,7 +281,49 @@ void cglabel(int l) { fprintf(Outfile, "L%d:\n", l); }
 
 void cgjump(int l) { fprintf(Outfile, "\tjmp\tL%d\n", l); }
 
-int cgwiden(int r, int oldtype, int newtype) {
+int cgwiden(int r, int oldtype, int newtype) { return r; }
 
-    return r;
+int cgprimsize(int type) {
+  switch (type) {
+  case P_NONE:
+  case P_VOID:
+    return 0;
+  case P_CHAR:
+    return 1;
+  case P_INT:
+    return 4;
+  case P_LONG:
+    return 8;
+  default:
+    fatal("bad type in cgprimsize function.");
+  }
+
+  return 0;
+}
+
+int cgcall(int r, int id) {
+  int outer = alloc_register();
+  fprintf(Outfile, "\tmovq\t%s, %%rdi\n", reglist[r]);
+  fprintf(Outfile, "\tcall\t%s\n", Gsym[id].name);
+  fprintf(Outfile, "\tmovq\t%%rax, %s\n", reglist[outer]);
+
+  free_register(r);
+  return outer;
+}
+
+void cgreturn(int reg, int id) {
+  switch (Gsym[id].type) {
+  case P_INT:
+    fprintf(Outfile, "\tmovl\t%s, %%eax\n", dreglist[reg]);
+    break;
+  case P_CHAR:
+    fprintf(Outfile, "\tmovzbl\t%s, %%eax\n", breglist[reg]);
+    break;
+  case P_LONG:
+    fprintf(Outfile, "\tmovq\t%s, %%rax\n", reglist[reg]);
+    break;
+  default:
+    fatald("bad type in cgloadglob function.", Gsym[id].type);
+  }
+  cgjump(Gsym[id].endlabel);
 }

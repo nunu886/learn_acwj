@@ -1,3 +1,4 @@
+#include "data.h"
 #include "decl.h"
 #include "defs.h"
 
@@ -15,6 +16,7 @@ char Text[TEXTLEN + 1];		// Last identifier scanned
 #define NSYMBOLS 1024
 struct symtable Gsym[NSYMBOLS];
 int Globs;
+int FunctionId;
 
 // Initialise global variables
 static void init() {
@@ -22,6 +24,7 @@ static void init() {
   Putback = '\n';
   Globs = -1;
   struct symtable Gsym[NSYMBOLS] = {};
+  FunctionId = 0;
 }
 
 // Print out a usage if started incorrectly
