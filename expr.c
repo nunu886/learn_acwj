@@ -140,7 +140,7 @@ struct ASTnode *binexpr(int ptp) {
 
   // Get the integer literal on the left.
   // Fetch the next token at the same time.
-  left = primary();
+  left = prefix();
 
   // If we hit a semicolon, return just the left node
   tokentype = Token.token;
@@ -186,4 +186,34 @@ struct ASTnode *binexpr(int ptp) {
   // Return the tree we have when the precedence
   // is the same or lower
   return (left);
+}
+
+struct ASTnode *prefix() {
+  struct ASTnode *tree;
+  switch (Token.token) {
+  case T_LONGAND:
+  case T_AMPER:
+    scan(&Token);
+    tree = prefix();
+    if (tree->op != A_IDENT) {
+      fatal("& operator must be followed by an identifier.");
+    }
+
+    tree->op = A_ADDR;
+    tree->type = pointer_to(tree->type);
+    break;
+  case T_STAR:
+    scan(&Token);
+    tree = prefix();
+
+    if (tree->op != A_IDENT && tree->op != A_DEREF) {
+      fatal("* operator must be followed by an identifier or `*`.");
+    }
+    tree = mkastunary(A_DEREF, valaue_at(tree->type), tree, 0);
+    break;
+  default:
+    tree = primary();
+  }
+
+  return tree;
 }

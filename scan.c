@@ -146,6 +146,11 @@ static int keyword(char *s) {
       return T_RETURN;
     }
     break;
+  case 'l':
+    if (!strcmp(s, "long")) {
+      return T_LONG;
+    }
+    break;
   }
   return (0);
 }
@@ -231,6 +236,15 @@ int scan(struct token *t) {
     break;
   case '}':
     t->token = T_RABRCE;
+    break;
+  case '&':
+    c = next();
+    if (c == '&') {
+      t->token = T_LONGAND;
+    } else {
+      putback(c);
+      t->token = T_AMPER;
+    }
     break;
   default:
 

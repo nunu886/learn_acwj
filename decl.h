@@ -6,15 +6,17 @@
 #define DECL_H
 #include "defs.h"
 
-//scan.c
+// scan.c
 int scan(struct token *t);
 void reject_token(struct token *t);
 
 // tree.c
-struct ASTnode *mkastnode(int op, int type, struct ASTnode *left, struct ASTnode *mid,
-                          struct ASTnode *right, int intvalue);
+struct ASTnode *mkastnode(int op, int type, struct ASTnode *left,
+                          struct ASTnode *mid, struct ASTnode *right,
+                          int intvalue);
 struct ASTnode *mkastleaf(int op, int type, int intvalue);
-struct ASTnode *mkastunary(int op, int type, struct ASTnode *left, int intvalue);
+struct ASTnode *mkastunary(int op, int type, struct ASTnode *left,
+                           int intvalue);
 
 // gen.c
 int genAST(struct ASTnode *n, int reg, int parentASTop);
@@ -57,11 +59,14 @@ void cgjump(int l);
 int cgprimsize(int type);
 int cgcall(int r, int id);
 void cgreturn(int reg, int id);
+int cgderef(int reg, int type);
+int cgaddress(int id);
 
 // expr.c
 struct ASTnode *binexpr(int ptp);
 struct ASTnode *primary();
 struct ASTnode *func_call();
+struct ASTnode *prefix();
 
 // stmt.c
 struct ASTnode *statements();
@@ -98,9 +103,11 @@ int findglob(char *s);
 static int newglob();
 int addglob(char *name, int type, int stype, int endlabel);
 
-//types.c
+// types.c
 int type_compatiable(int *left, int *right, int onlyright);
+int pointer_to(int type);
+int valaue_at(int ptrtype);
 
-//gen.c
+// gen.c
 int label();
 #endif

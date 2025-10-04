@@ -153,6 +153,12 @@ int cgloadglob(int id) {
   case P_LONG:
     fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
     break;
+  case P_VOIDPTR:
+  case P_CHARPTR:
+  case P_INTPTR:
+  case P_LONGPTR:
+    fprintf(Outfile, "\tmovq\t%s(\%%rip), %s\n", Gsym[id].name, reglist[r]);
+    break;
   default:
     fatald("bad type in cgloadglob function.", Gsym[id].type);
   }
@@ -170,6 +176,12 @@ int cgstorglob(int r, int id) {
     fprintf(Outfile, "\tmovb\t%s, %s(\%%rip)\n", breglist[r], identifier);
     break;
   case P_LONG:
+    fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], identifier);
+    break;
+  case P_VOIDPTR:
+  case P_CHARPTR:
+  case P_INTPTR:
+  case P_LONGPTR:
     fprintf(Outfile, "\tmovq\t%s, %s(\%%rip)\n", reglist[r], identifier);
     break;
   default:
@@ -294,6 +306,11 @@ int cgprimsize(int type) {
     return 4;
   case P_LONG:
     return 8;
+  case P_VOIDPTR:
+  case P_CHARPTR:
+  case P_INTPTR:
+  case P_LONGPTR:
+    return 8;
   default:
     fatal("bad type in cgprimsize function.");
   }
@@ -326,4 +343,25 @@ void cgreturn(int reg, int id) {
     fatald("bad type in cgloadglob function.", Gsym[id].type);
   }
   cgjump(Gsym[id].endlabel);
+}
+
+int cgaddress(int id) {
+  int reg = alloc_register();
+  fprintf(Outfile, "\tleaq\t%s(%%rip), %s\n", Gsym[id].name, reglist[reg]);
+
+  return reg;
+}
+
+int cgderef(int reg, int type) {
+  switch (type) {
+  case P_CHARPTR:
+    fprintf(Outfile, "\tmovzbq\t(%s), %s\n", reglist[reg], reglist[reg]);
+    break;
+  case P_INTPTR:
+  case P_LONGPTR:
+    fprintf(Outfile, "\tmovzbq\t(%s), %s\n", reglist[reg], reglist[reg]);
+    break;
+  }
+
+  return reg;
 }

@@ -41,6 +41,9 @@ enum {
   T_VOID,
   T_CHAR,
   T_RETURN,
+  T_LONGAND,
+  T_AMPER,
+  T_LONG,
 };
 
 enum {
@@ -49,6 +52,10 @@ enum {
   P_INT,
   P_CHAR,
   P_LONG,
+  P_VOIDPTR,
+  P_INTPTR,
+  P_CHARPTR,
+  P_LONGPTR,
 };
 
 // Token structure
@@ -81,6 +88,8 @@ enum {
   A_WIDEN,
   A_RETURN,
   A_FUNCCALL,
+  A_DEREF, //*a
+  A_ADDR,  //&a
 };
 
 enum {
