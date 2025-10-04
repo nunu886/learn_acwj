@@ -72,5 +72,5 @@ int valaue_at(int ptrtype) {
     fatald("unrecognised in pointer to: %d", ptrtype);
   }
 
-  return ptrtype;
+  return newtype;
 }
