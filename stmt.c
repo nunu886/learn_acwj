@@ -68,7 +68,7 @@ struct ASTnode *assignment_statement() {
   }
 
   if (Token.token == T_LPAREN) {
-      return func_call();
+    return func_call();
   }
 
   right = mkastleaf(A_LVIDENT, Gsym[id].type, id);
@@ -91,14 +91,17 @@ struct ASTnode *assignment_statement() {
 
 struct ASTnode *single_statement() {
   struct ASTnode *tree = NULL;
+  int type = P_NONE;
   switch (Token.token) {
   case T_PRINT:
     tree = print_statement();
     break;
   case T_CHAR:
   case T_INT:
-    var_declaration();
-    tree = NULL;
+  case T_LONG:
+    type = parse_type(Token.token);
+    ident();
+    var_declaration(type);
     break;
   case T_IDENT:
     tree = assignment_statement();
@@ -224,22 +227,22 @@ struct ASTnode *for_statement() {
 }
 
 struct ASTnode *return_statement() {
-    struct ASTnode *tree = NULL;
-    int functype = Gsym[FunctionId].type;
+  struct ASTnode *tree = NULL;
+  int functype = Gsym[FunctionId].type;
 
-    if (functype == P_VOID) {
-        fatal("can not return from a void function.");
-    }
+  if (functype == P_VOID) {
+    fatal("can not return from a void function.");
+  }
 
-    match(T_RETURN, "return");
+  match(T_RETURN, "return");
 
-    tree = binexpr(0);
-    int returntype = tree->type;
-    if (!type_compatiable(&returntype, &functype, 1)) {
-        fatal("incompatible types.");
-    }
+  tree = binexpr(0);
+  int returntype = tree->type;
+  if (!type_compatiable(&returntype, &functype, 1)) {
+    fatal("incompatible types.");
+  }
 
-    tree = mkastunary(A_RETURN, P_NONE, tree, 0);
-    semi();
-    return tree;
+  tree = mkastunary(A_RETURN, P_NONE, tree, 0);
+  semi();
+  return tree;
 }

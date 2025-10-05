@@ -44,6 +44,7 @@ enum {
   T_LONGAND,
   T_AMPER,
   T_LONG,
+  T_COMMA,
 };
 
 enum {

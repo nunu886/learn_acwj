@@ -1,0 +1,14 @@
+int f;
+void main() {
+    int a;
+    a = 3;
+    printint(a);
+    int c,d;
+    c = 4;
+    d = 5;
+    printint(c);
+    printint(d);
+    f = 9;
+    d = f + c;
+    printint(d);
+}

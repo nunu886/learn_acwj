@@ -246,6 +246,9 @@ int scan(struct token *t) {
       t->token = T_AMPER;
     }
     break;
+  case ',':
+    t->token = T_COMMA;
+    break;
   default:
 
     // If it's a digit, scan the

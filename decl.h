@@ -80,9 +80,10 @@ struct ASTnode *for_statement();
 struct ASTnode *return_statement();
 
 // decl.c
-void var_declaration();
-struct ASTnode *function_declaration();
-int parse_type(int type);
+void var_declaration(int type);
+struct ASTnode *function_declaration(int type);
+int parse_type(int token);
+void global_declarations();
 
 // misc.c
 void match(int t, char *what);
