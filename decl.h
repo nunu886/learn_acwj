@@ -25,6 +25,7 @@ void genpostamble();
 void genfreeregs();
 void genprintint(int reg);
 int genWhile(struct ASTnode *n);
+int genprimsize(int type);
 
 // cg.c
 void freeall_registers(void);
@@ -40,7 +41,7 @@ int cgloadglob(int id);
 int cgstorglob(int r, int id);
 void cgglobsym(int id);
 void genglobsym(int id);
-int cgloadint(int value);
+int cgloadint(int value, int type);
 int cgequal(int r1, int r2);
 int cgnotequal(int r1, int r2);
 int cglesshan(int r1, int r2);
@@ -61,6 +62,7 @@ int cgcall(int r, int id);
 void cgreturn(int reg, int id);
 int cgderef(int reg, int type);
 int cgaddress(int id);
+int cgshlconst(int reg, int val);
 
 // expr.c
 struct ASTnode *binexpr(int ptp);
@@ -108,6 +110,7 @@ int addglob(char *name, int type, int stype, int endlabel);
 int type_compatiable(int *left, int *right, int onlyright);
 int pointer_to(int type);
 int valaue_at(int ptrtype);
+struct ASTnode *modify_type(struct ASTnode *tree, int rtype, int op);
 
 // gen.c
 int label();

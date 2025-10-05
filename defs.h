@@ -91,6 +91,7 @@ enum {
   A_FUNCCALL,
   A_DEREF, //*a
   A_ADDR,  //&a
+  A_SCALE,
 };
 
 enum {
@@ -109,6 +110,7 @@ struct ASTnode {
   union {
     int intvalue; // For A_INTLIT, the integer value
     int id;       // For A_IDENT, the symbol slot number
+    int size; // for A_SCALE
   } v;
 };
 

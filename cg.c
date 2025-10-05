@@ -192,14 +192,31 @@ int cgstorglob(int r, int id) {
 
 void cgglobsym(int id) {
   int typesize = cgprimsize(Gsym[id].type);
-  fprintf(Outfile, "\t.comm\t%s, %d,%d\n", Gsym[id].name, typesize, typesize);
+  fprintf(Outfile,
+          "\t.data\n"
+          "\t.globl\t%s\n",
+          Gsym[id].name);
+  switch (typesize) {
+  case 1:
+    fprintf(Outfile, "%s:\t.byte\t0\n", Gsym[id].name);
+    break;
+  case 4:
+    fprintf(Outfile, "%s:\t.long\t0\n", Gsym[id].name);
+    break;
+  case 8:
+    fprintf(Outfile, "%s:\t.quad\t0\n", Gsym[id].name);
+    break;
+  default:
+    fatald("unknown typesize in cgglobsym.", typesize);
+    break;
+  }
 }
 
 void genglobsym(int id) { cgglobsym(id); }
 
 // load an integer literal value into a register.
 // return a register
-int cgloadint(int value) {
+int cgloadint(int value, int type) {
   int reg = alloc_register();
   fprintf(Outfile, "\tmovq\t$%d, %s\n", value, reglist[reg]);
 
@@ -363,5 +380,10 @@ int cgderef(int reg, int type) {
     break;
   }
 
+  return reg;
+}
+
+int cgshlconst(int reg, int val) {
+  fprintf(Outfile, "\tsalq\t$%d, %s\n", val, reglist[reg]);
   return reg;
 }

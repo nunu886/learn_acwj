@@ -75,6 +75,11 @@ struct ASTnode *assignment_statement() {
   match(T_EQUALS, "=");
 
   left = binexpr(0);
+  left = modify_type(left, right->type, 0);
+
+  if (left == NULL) {
+      fatal("incompatible expression in assignment.");
+  }
   int lefttype = left->type;
   int righttype = right->type;
 

@@ -2,6 +2,7 @@
 #include "decl.h"
 #include "defs.h"
 #include <stdio.h>
+#include <string.h>
 
 // Parsing of expressions
 // Copyright (c) 2019 Warren Toomey, GPL3
@@ -141,7 +142,6 @@ struct ASTnode *binexpr(int ptp) {
   // Get the integer literal on the left.
   // Fetch the next token at the same time.
   left = prefix();
-
   // If we hit a semicolon, return just the left node
   tokentype = Token.token;
   if (tokentype == T_SEMI || tokentype == T_RPAREN)
@@ -158,18 +158,19 @@ struct ASTnode *binexpr(int ptp) {
     int prec = op_precedence(tokentype);
     right = binexpr(prec);
 
-    int lefttype = left->type;
-    int righttype = right->type;
+    int astop = arithop(tokentype);
+    struct ASTnode *lefttemp = modify_type(left, right->type, astop);
+    struct ASTnode *righttemp = modify_type(right, left->type, astop);
 
-    if (!type_compatiable(&lefttype, &righttype, 0)) {
-      fatal("incompatible types");
+    if (lefttemp == NULL || righttemp == NULL) {
+      fatal("incompatible types in binary expression.");
     }
 
-    if (lefttype) {
-      left = mkastunary(lefttype, righttype, left, 0);
+    if (lefttemp != NULL) {
+      left = lefttemp;
     }
-    if (righttype) {
-      right = mkastunary(righttype, lefttype, right, 0);
+    if (righttemp) {
+      right = righttemp;
     }
 
     // Join that sub-tree with ours. Convert the token

@@ -1,0 +1,10 @@
+char f;
+void main() {
+  f = 0;
+  printint(f);
+  int a;
+  a = 3;
+  int *b;
+  b = &a;
+  printint(*b);
+}
